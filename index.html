@@ -1021,7 +1021,7 @@ async function exportPDF() {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbwIMuVIwJHHquYO0Mahp3mmb11-3CAhlgu3XTtXdsmX76UtfGHeGA_9c-CQTVJdUL9JaA/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbzGJFP8Q7cCyzvedb_STgBN-fK87ofrMn1j3qtAcJte9XkOlF_mv6A3hbLwd01FHSLTsA/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1053,16 +1053,44 @@ async function saveToSheets() {
     not_checked: items.filter(i=>i.status==='לא נבדק').length,
     defects,
     notes: meta.notes,
+    conclusion: meta.conclusion,
     out_of_service: meta.outOfService,
     calibrated: meta.calibrated,
     towing: meta.towing,
     next_test: meta.nextTest,
     next_service: meta.nextService
   };
+
+  // Apps Script requires no-cors — use form submission trick for reliable delivery
   try {
-    await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    // Method 1: fetch with no-cors (fire and forget)
+    fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
     showToast('✅ נשמר ב-Google Sheets!');
-  } catch(e) { showToast('❌ שגיאה — בדוק את ה-URL'); }
+  } catch(e) {
+    // Method 2: fallback via form
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = url;
+      form.target = '_blank';
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'data';
+      input.value = JSON.stringify(payload);
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      showToast('✅ נשמר!');
+    } catch(e2) {
+      showToast('❌ שגיאה בשמירה');
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1194,7 +1222,7 @@ function setDateField(fieldId, isoDate) {
 // ═══ QR CODE ═══
 // Auto-set Sheets URL if not already set
 if (!localStorage.getItem('sheets-url')) {
-  localStorage.setItem('sheets-url', 'https://script.google.com/macros/s/AKfycbwIMuVIwJHHquYO0Mahp3mmb11-3CAhlgu3XTtXdsmX76UtfGHeGA_9c-CQTVJdUL9JaA/exec');
+  localStorage.setItem('sheets-url', 'https://script.google.com/macros/s/AKfycbzGJFP8Q7cCyzvedb_STgBN-fK87ofrMn1j3qtAcJte9XkOlF_mv6A3hbLwd01FHSLTsA/exec');
 }
 function showQR() {
   const container = document.getElementById('qr-container');
