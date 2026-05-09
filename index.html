@@ -6,6 +6,7 @@
 <title>טופס ביקורת חודשית לרכב — מחלקת תחבורה</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&family=Rubik:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;700;900&family=Google+Sans:wght@400;500;700&display=swap');
 
@@ -408,10 +409,28 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
   </div>
   <div class="header-actions">
     <button class="btn btn-outline" onclick="openSheetsConfig()">⚙️ הגדרות Sheets</button>
+    <button class="btn btn-outline" onclick="showQR()">📱 QR</button>
     <button class="btn btn-gold" onclick="exportPDF()">📄 ייצוא PDF</button>
     <button class="btn btn-primary" onclick="saveToSheets()">💾 שמור ב-Sheets</button>
   </div>
 </header>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal" style="text-align:center;max-width:320px;">
+    <h3 style="margin-bottom:6px;">📱 סרוק לפתיחת הטופס</h3>
+    <p style="margin-bottom:16px;font-size:0.78rem;">שתף עם צוות לסריקה ישירה מהטלפון</p>
+    <div id="qr-container" style="background:#fff;padding:16px;border-radius:16px;display:inline-block;margin-bottom:16px;"></div>
+    <br>
+    <a href="https://bealex317.github.io/vehicle-inspection/" target="_blank"
+       style="font-size:0.72rem;color:#4a9eff;word-break:break-all;display:block;margin-bottom:16px;">
+      https://bealex317.github.io/vehicle-inspection/
+    </a>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn-cancel" onclick="document.getElementById('qr-modal').classList.remove('open')">סגור</button>
+    </div>
+  </div>
+</div>
 
 <main style="position:relative;z-index:10;">
 
@@ -1170,6 +1189,21 @@ function setDateField(fieldId, isoDate) {
   if (parts.length === 3) {
     document.getElementById(fieldId).value = parts[2] + '/' + parts[1] + '/' + parts[0];
   }
+}
+
+// ═══ QR CODE ═══
+function showQR() {
+  const container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  new QRCode(container, {
+    text: 'https://bealex317.github.io/vehicle-inspection/',
+    width: 200,
+    height: 200,
+    colorDark: '#0a2410',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  document.getElementById('qr-modal').classList.add('open');
 }
 
 render();
