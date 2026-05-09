@@ -1021,8 +1021,8 @@ async function exportPDF() {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url')||'';
-  document.getElementById('sheets-name').value = localStorage.getItem('sheets-name')||'בדיקות';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbwIMuVIwJHHquYO0Mahp3mmb11-3CAhlgu3XTtXdsmX76UtfGHeGA_9c-CQTVJdUL9JaA/exec';
+  document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
 function closeSheetsConfig() { document.getElementById('sheets-modal').classList.remove('open'); }
@@ -1192,6 +1192,10 @@ function setDateField(fieldId, isoDate) {
 }
 
 // ═══ QR CODE ═══
+// Auto-set Sheets URL if not already set
+if (!localStorage.getItem('sheets-url')) {
+  localStorage.setItem('sheets-url', 'https://script.google.com/macros/s/AKfycbwIMuVIwJHHquYO0Mahp3mmb11-3CAhlgu3XTtXdsmX76UtfGHeGA_9c-CQTVJdUL9JaA/exec');
+}
 function showQR() {
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
