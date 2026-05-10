@@ -1018,9 +1018,14 @@ async function exportPDF() {
   // שמירה ל-Google Drive
   const driveUrl = 'https://script.google.com/macros/s/AKfycbzF4aUDVO4O9NPNHtNvqMB-AHoVvTo8_f5Z3o7q1bhIHTJca_QAzsZjhcJ4_usOyx788Q/exec';
   try {
-    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    // Convert PDF to base64
+    const pdfArrayBuffer = doc.output('arraybuffer');
+    const pdfBytes = new Uint8Array(pdfArrayBuffer);
+    let binary = '';
+    pdfBytes.forEach(b => binary += String.fromCharCode(b));
+    const pdfBase64 = btoa(binary);
     const fileName = '\u05D1\u05D3\u05D9\u05E7\u05D4_'+(meta.reg||'\u05E8\u05DB\u05D1')+'_'+(meta.date||'')+'.pdf';
-    setTimeout(()=> {
+    setTimeout(() => {
       fetch(driveUrl, {
         method: 'POST',
         mode: 'no-cors',
@@ -1034,9 +1039,9 @@ async function exportPDF() {
         })
       });
       showToast('\u{1F4C1} PDF \u05E0\u05E9\u05DE\u05E8 \u05D1-Google Drive!');
-    }, 500);
+    }, 800);
   } catch(e) {
-    console.log('Drive error:', e);
+    console.error('Drive error:', e);
   }
 }
 
