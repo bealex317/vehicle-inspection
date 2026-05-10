@@ -536,7 +536,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 
 <script>
 // ═══ SHEETS URL ═══
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyvTA6o_e-9br-14evGQ9t2rkLekN6bAlNf1Fq_E4JODaZw_wDdWWR_UvsWXAA95dYYCA/exec';
 localStorage.setItem('sheets-url', SHEETS_URL);
 
 // ═══════════════════════════════════════════════════
@@ -1008,7 +1008,7 @@ async function exportPDF(silent=false) {
   if(!silent) showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbyvTA6o_e-9br-14evGQ9t2rkLekN6bAlNf1Fq_E4JODaZw_wDdWWR_UvsWXAA95dYYCA/exec';
   try {
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
@@ -1041,7 +1041,7 @@ async function exportPDF(silent=false) {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbyvTA6o_e-9br-14evGQ9t2rkLekN6bAlNf1Fq_E4JODaZw_wDdWWR_UvsWXAA95dYYCA/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1100,7 +1100,7 @@ async function saveToSheets() {
   // ── בניית PDF ושמירה ל-Drive ──
   setTimeout(async () => {
     try {
-      const driveUrl = 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
+      const driveUrl = 'https://script.google.com/macros/s/AKfycbyvTA6o_e-9br-14evGQ9t2rkLekN6bAlNf1Fq_E4JODaZw_wDdWWR_UvsWXAA95dYYCA/exec';
       const { jsPDF } = window.jspdf;
 
       // Build simple 1-page summary PDF
