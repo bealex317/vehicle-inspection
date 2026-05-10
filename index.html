@@ -1062,6 +1062,8 @@ async function saveToSheets() {
   playEngineSound();
   const { meta, items } = collectData();
   const defects = items.filter(i=>i.status==='לא תקין').map(i=>`[${i.section}] ${i.item}`).join(' | ');
+
+  // Base payload
   const payload = {
     timestamp: new Date().toISOString(),
     date: meta.date,
@@ -1075,8 +1077,8 @@ async function saveToSheets() {
     bad_count: items.filter(i=>i.status==='לא תקין').length,
     not_checked: items.filter(i=>i.status==='לא נבדק').length,
     defects,
-    notes: meta.notes,
     conclusion: meta.conclusion,
+    notes: meta.notes,
     out_of_service: meta.outOfService,
     calibrated: meta.calibrated,
     towing: meta.towing,
@@ -1084,9 +1086,14 @@ async function saveToSheets() {
     next_service: meta.nextService
   };
 
-  // Apps Script requires no-cors — use form submission trick for reliable delivery
+  // Add each question as separate column
+  items.forEach((item, idx) => {
+    const colName = (idx+1) + '_' + item.item.slice(0,20).replace(/[,\n]/g,' ');
+    payload[colName] = item.status;
+    if (item.defect) payload[colName + '_ליקוי'] = item.defect;
+  });
+
   try {
-    // Method 1: fetch with no-cors (fire and forget)
     fetch(url, {
       method: 'POST',
       mode: 'no-cors',
@@ -1095,24 +1102,7 @@ async function saveToSheets() {
     });
     showToast('✅ נשמר ב-Google Sheets!');
   } catch(e) {
-    // Method 2: fallback via form
-    try {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = url;
-      form.target = '_blank';
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'data';
-      input.value = JSON.stringify(payload);
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      showToast('✅ נשמר!');
-    } catch(e2) {
-      showToast('❌ שגיאה בשמירה');
-    }
+    showToast('❌ שגיאה בשמירה');
   }
 }
 
