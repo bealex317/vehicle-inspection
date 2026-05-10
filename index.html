@@ -536,7 +536,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 
 <script>
 // ═══ SHEETS URL ═══
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxxoLY7CvS5-M8nphWijYbgKjAnk1KNt2gBuMmWMjFeos0R3jLIQQpIDt1ukWEuED1ysA/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
 localStorage.setItem('sheets-url', SHEETS_URL);
 
 // ═══════════════════════════════════════════════════
@@ -1008,7 +1008,7 @@ async function exportPDF(silent=false) {
   if(!silent) showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbxxoLY7CvS5-M8nphWijYbgKjAnk1KNt2gBuMmWMjFeos0R3jLIQQpIDt1ukWEuED1ysA/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
   try {
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
@@ -1041,7 +1041,7 @@ async function exportPDF(silent=false) {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxxoLY7CvS5-M8nphWijYbgKjAnk1KNt2gBuMmWMjFeos0R3jLIQQpIDt1ukWEuED1ysA/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1053,149 +1053,46 @@ function saveSheetsConfig() {
 }
 
 async function saveToSheets() {
-  const url = SHEETS_URL || localStorage.getItem('sheets-url');
-  if (!url) { openSheetsConfig(); showToast('⚠️ יש להגדיר URL תחילה'); return; }
-  showToast('שומר נתונים ומייצר PDF...');
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
+  showToast('שומר נתונים...');
   playEngineSound();
+
   const { meta, items } = collectData();
   const defects = items.filter(i=>i.status==='לא תקין').map(i=>`[${i.section}] ${i.item}`).join(' | ');
 
-  // ── שמירת נתונים ל-Sheets ──
   const payload = {
-    'חותמת זמן':        new Date().toLocaleString('he-IL'),
-    'תאריך בדיקה':      meta.date,
-    'שם הבודק':         meta.inspector,
-    'יחידה':            meta.unit,
-    'מס רישוי':         meta.reg,
-    'סוג רכב':          meta.type,
-    'מד אוץ קמ':        meta.km,
-    'רכב 4x4':          meta.is4x4,
-    'סה"כ תקין':        items.filter(i=>i.status==='תקין').length,
-    'סה"כ לא תקין':     items.filter(i=>i.status==='לא תקין').length,
-    'סה"כ לא נבדק':     items.filter(i=>i.status==='לא נבדק').length,
-    'ליקויים':          defects,
-    'מסקנה סופית':      meta.conclusion,
-    'הערות':            meta.notes,
-    'חורג מטיפול':      meta.outOfService,
-    'כננת':             meta.calibrated,
-    'וו גרירה':         meta.towing,
-    'מבחן רישוי הבא':   meta.nextTest,
-    'טיפול הבא קמ':     meta.nextService
+    'חותמת זמן':      new Date().toLocaleString('he-IL'),
+    'תאריך בדיקה':    meta.date,
+    'שם הבודק':       meta.inspector,
+    'יחידה':          meta.unit,
+    'מס רישוי':       meta.reg,
+    'סוג רכב':        meta.type,
+    'מד אוץ קמ':      meta.km,
+    'רכב 4x4':        meta.is4x4,
+    'סהכ תקין':       items.filter(i=>i.status==='תקין').length,
+    'סהכ לא תקין':    items.filter(i=>i.status==='לא תקין').length,
+    'ליקויים':        defects,
+    'מסקנה':          meta.conclusion,
+    'הערות':          meta.notes,
   };
 
-  // כל שאלה בעברית
-  items.forEach((item) => {
+  // הוסף כל שאלה
+  items.forEach(item => {
     payload[item.item] = item.status;
-    if (item.defect) payload[item.item + ' — ליקוי'] = item.defect;
+    if (item.defect) payload[item.item + ' ליקוי'] = item.defect;
   });
 
-  // שליחה ל-Sheets דרך URL params (עוקף בעיית no-cors body)
-  const encoded = encodeURIComponent(JSON.stringify(payload));
-  const fullUrl = url + '?data=' + encoded;
-  
-  const img = new Image();
-  img.src = fullUrl;
-  
-  showToast('✅ נתונים נשמרו ב-Sheets!');
-
-  // ── בניית PDF ושמירה ל-Drive ──
-  setTimeout(async () => {
-    try {
-      const driveUrl = 'https://script.google.com/macros/s/AKfycbxxoLY7CvS5-M8nphWijYbgKjAnk1KNt2gBuMmWMjFeos0R3jLIQQpIDt1ukWEuED1ysA/exec';
-      const { jsPDF } = window.jspdf;
-
-      // Build simple 1-page summary PDF
-      const doc2 = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
-
-      // Header
-      doc2.setFillColor(15,45,20); doc2.rect(0,0,210,20,'F');
-      doc2.setTextColor(255,255,255); doc2.setFont('helvetica','bold'); doc2.setFontSize(11);
-      doc2.text('טופס ביקורת חודשית לרכב — מחלקת תחבורה מגב', 105, 13, {align:'center'});
-
-      // Meta
-      doc2.setFontSize(9); doc2.setTextColor(30,41,59); doc2.setFont('helvetica','normal');
-      let y = 28;
-      const metaLines = [
-        'מס רישוי: '+(meta.reg||'—') + '    סוג: '+(meta.type||'—') + '    קמ: '+(meta.km||'—'),
-        'בודק: '+(meta.inspector||'—') + '    יחידה: '+(meta.unit||'—') + '    תאריך: '+(meta.date||'—'),
-        'מסקנה: '+(meta.conclusion||'—') + '    ליקויים: '+items.filter(i=>i.status==='לא תקין').length
-      ];
-      metaLines.forEach(l => { doc2.text(l, 200, y, {align:'right'}); y+=7; });
-
-      // Items table
-      y += 4;
-      doc2.setFillColor(15,45,20); doc2.rect(10,y,190,7,'F');
-      doc2.setTextColor(255,255,255); doc2.setFont('helvetica','bold'); doc2.setFontSize(8);
-      doc2.text('סטטוס', 25, y+5, {align:'center'});
-      doc2.text('תיאור', 190, y+5, {align:'right'});
-      y += 8;
-      doc2.setFont('helvetica','normal'); doc2.setTextColor(30,41,59);
-      items.forEach((item,i) => {
-        if(y>270){ doc2.addPage(); y=15; }
-        const bad = item.status==='לא תקין';
-        const ok  = item.status==='תקין';
-        if(bad) doc2.setFillColor(255,235,235);
-        else if(ok) doc2.setFillColor(235,255,240);
-        else doc2.setFillColor(250,250,250);
-        doc2.rect(10,y,190,6,'F');
-        doc2.setTextColor(bad?180:ok?20:100, bad?20:ok?120:100, 20);
-        doc2.text(item.status, 25, y+4.5, {align:'center'});
-        doc2.setTextColor(30,41,59);
-        doc2.text((item.item||'').slice(0,60), 195, y+4.5, {align:'right'});
-        y+=6;
-      });
-
-      // Watermark
-      doc2.setTextColor(180,210,180); doc2.setFont('helvetica','bold'); doc2.setFontSize(22);
-      doc2.text('(c) Zachuyot Yotzirim', 105, 130, {align:'center', angle:35});
-      doc2.setFontSize(18);
-      doc2.text('Rav-Pakad Alex Bendersky', 105, 148, {align:'center', angle:35});
-
-      // Convert to base64 and upload
-      const ab = doc2.output('arraybuffer');
-      const bytes = new Uint8Array(ab);
-      let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
-      const b64 = btoa(bin);
-      const fname = '\u05D1\u05D3\u05D9\u05E7\u05D4_'+(meta.reg||'\u05E8\u05DB\u05D1')+'_'+(meta.date||'')+'.pdf';
-
-      // שליחה ל-Drive דרך form POST (עוקפת CORS)
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = driveUrl;
-      form.target = 'drive-iframe';
-      form.style.display = 'none';
-
-      const addField = (name, val) => {
-        const inp = document.createElement('input');
-        inp.type = 'hidden'; inp.name = name; inp.value = val;
-        form.appendChild(inp);
-      };
-      addField('pdf_base64', b64);
-      addField('file_name', fname);
-      addField('reg', meta.reg||'');
-      addField('date', meta.date||'');
-      addField('inspector', meta.inspector||'');
-
-      // iframe target
-      let iframe = document.getElementById('drive-iframe');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = 'drive-iframe';
-        iframe.id = 'drive-iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-
-      showToast('\u{1F4C1} PDF \u05E0\u05E9\u05DE\u05E8 \u05D1-Google Drive!');
-    } catch(err) {
-      console.error('PDF Drive:', err);
-      showToast('⚠️ שגיאה בשמירת PDF');
-    }
-  }, 300);
+  // שלח דרך fetch
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(payload)
+    });
+    showToast('✅ נשמר ב-Google Sheets!');
+  } catch(e) {
+    showToast('❌ שגיאה: ' + e.message);
+  }
 }
 
 // ═══════════════════════════════════════════════════
