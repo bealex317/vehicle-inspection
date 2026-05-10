@@ -536,7 +536,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 
 <script>
 // ═══ SHEETS URL ═══
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxsSd1jMWtLAUHipfvpaym45DGaJ6wZwjqoHZAhctouEQllu2KhTQNyvzIUouBAQTM-jw/exec';
 localStorage.setItem('sheets-url', SHEETS_URL);
 
 // ═══════════════════════════════════════════════════
@@ -1008,7 +1008,7 @@ async function exportPDF(silent=false) {
   if(!silent) showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbxsSd1jMWtLAUHipfvpaym45DGaJ6wZwjqoHZAhctouEQllu2KhTQNyvzIUouBAQTM-jw/exec';
   try {
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
@@ -1041,7 +1041,7 @@ async function exportPDF(silent=false) {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxsSd1jMWtLAUHipfvpaym45DGaJ6wZwjqoHZAhctouEQllu2KhTQNyvzIUouBAQTM-jw/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1053,7 +1053,7 @@ function saveSheetsConfig() {
 }
 
 async function saveToSheets() {
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxkp0u9Ed7emTiA95YbnzOisGnwrZ7bHhxiVDdYahHpV0vbE1DpxQRJc4Kpi5fMKseY7g/exec';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxsSd1jMWtLAUHipfvpaym45DGaJ6wZwjqoHZAhctouEQllu2KhTQNyvzIUouBAQTM-jw/exec';
   showToast('שומר נתונים...');
   playEngineSound();
 
@@ -1082,13 +1082,13 @@ async function saveToSheets() {
     if (item.defect) payload[item.item + ' ליקוי'] = item.defect;
   });
 
-  // שלח דרך fetch
+  // שלח דרך GET עם params (עובד תמיד עם Apps Script)
   try {
-    await fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
-    });
+    const jsonStr = JSON.stringify(payload);
+    const encoded = encodeURIComponent(jsonStr);
+    const getUrl = SHEETS_URL + '?data=' + encoded;
+    
+    await fetch(getUrl, { method: 'GET', mode: 'no-cors' });
     showToast('✅ נשמר ב-Google Sheets!');
   } catch(e) {
     showToast('❌ שגיאה: ' + e.message);
