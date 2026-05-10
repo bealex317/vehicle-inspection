@@ -535,6 +535,10 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 <div id="toast"></div>
 
 <script>
+// ═══ SHEETS URL ═══
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
+localStorage.setItem('sheets-url', SHEETS_URL);
+
 // ═══════════════════════════════════════════════════
 // DATA — מדויק לפי הטופס הסרוק
 // ═══════════════════════════════════════════════════
@@ -1049,7 +1053,7 @@ function saveSheetsConfig() {
 }
 
 async function saveToSheets() {
-  const url = localStorage.getItem('sheets-url');
+  const url = SHEETS_URL || localStorage.getItem('sheets-url');
   if (!url) { openSheetsConfig(); showToast('⚠️ יש להגדיר URL תחילה'); return; }
   showToast('שומר נתונים ומייצר PDF...');
   playEngineSound();
@@ -1320,10 +1324,6 @@ function setDateField(fieldId, isoDate) {
 }
 
 // ═══ QR CODE ═══
-// Auto-set Sheets URL if not already set
-if (!localStorage.getItem('sheets-url')) {
-  localStorage.setItem('sheets-url', 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec');
-}
 function showQR() {
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
