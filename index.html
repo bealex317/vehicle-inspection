@@ -732,12 +732,13 @@ function updateSummary() {
     else if (val==='לא תקין') bad++;
   }));
   const checked = ok + bad;
-  document.getElementById('cnt-ok').textContent = ok;
-  document.getElementById('cnt-bad').textContent = bad;
-  document.getElementById('cnt-checked').textContent = checked;
-  document.getElementById('cnt-total').textContent = total;
-  document.getElementById('progress-label').textContent = `${checked} מתוך ${total} נבדקו`;
-  document.getElementById('progress-fill').style.width = total ? (checked/total*100)+'%' : '0%';
+  const el = (id) => document.getElementById(id);
+  if(el('cnt-ok')) el('cnt-ok').textContent = ok;
+  if(el('cnt-bad')) el('cnt-bad').textContent = bad;
+  if(el('cnt-checked')) el('cnt-checked').textContent = checked;
+  if(el('cnt-total')) el('cnt-total').textContent = total;
+  if(el('progress-label')) el('progress-label').textContent = `${checked} מתוך ${total} נבדקו`;
+  if(el('progress-fill')) el('progress-fill').style.width = total ? (checked/total*100)+'%' : '0%';
 }
 
 // ═══════════════════════════════════════════════════
@@ -1087,20 +1088,31 @@ async function saveToSheets() {
     const jsonStr = JSON.stringify(payload);
     const encoded = encodeURIComponent(jsonStr);
     console.log('Payload size:', encoded.length, 'chars');
-    console.log('URL:', SHEETS_URL + '?data=' + encoded.slice(0,100) + '...');
-    
-    // חלק ל-2 בקשות אם גדול מדי
+
+    // אם גדול מ-2000 — שלח רק נתוני בסיס
+    let sendPayload = payload;
     if (encoded.length > 2000) {
-      // שלח רק נתוני בסיס
-      const basePayload = {};
-      Object.keys(payload).slice(0, 20).forEach(k => basePayload[k] = payload[k]);
-      const baseEncoded = encodeURIComponent(JSON.stringify(basePayload));
-      const getUrl = SHEETS_URL + '?data=' + baseEncoded;
-      await fetch(getUrl, { method: 'GET', mode: 'no-cors' });
-    } else {
-      const getUrl = SHEETS_URL + '?data=' + encoded;
-      await fetch(getUrl, { method: 'GET', mode: 'no-cors' });
+      sendPayload = {
+        'חותמת זמן':    payload['חותמת זמן'],
+        'תאריך בדיקה':  payload['תאריך בדיקה'],
+        'שם הבודק':     payload['שם הבודק'],
+        'יחידה':        payload['יחידה'],
+        'מס רישוי':     payload['מס רישוי'],
+        'סוג רכב':      payload['סוג רכב'],
+        'מד אוץ קמ':    payload['מד אוץ קמ'],
+        'סהכ תקין':     payload['סהכ תקין'],
+        'סהכ לא תקין':  payload['סהכ לא תקין'],
+        'ליקויים':      payload['ליקויים'],
+        'מסקנה':        payload['מסקנה'],
+        'הערות':        payload['הערות'],
+      };
     }
+
+    const finalEncoded = encodeURIComponent(JSON.stringify(sendPayload));
+    const getUrl = SHEETS_URL + '?data=' + finalEncoded;
+    console.log('Final size:', finalEncoded.length, 'chars');
+    
+    await fetch(getUrl, { method: 'GET', mode: 'no-cors' });
     showToast('✅ נשמר ב-Google Sheets!');
   } catch(e) {
     showToast('❌ שגיאה: ' + e.message);
