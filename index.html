@@ -124,6 +124,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
   box-shadow: 0 0 0 2px rgba(74,158,255,0.35);
 }
 .meta-field input::placeholder { color:rgba(255,255,255,0.35); font-weight:400; }
+  .meta-field input[type=date] { color-scheme: dark; }
   .meta-field select option { background:#1a1a1a; color:#fff; }
 .meta-field select option { background:#1c2128; color:#fff; font-weight:600; }
 
@@ -444,11 +445,9 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
       <select id="meta-type"><option value="">בחר סוג...</option><option>רכב פרטי</option><option>ג'יפ</option><option>מסחרי</option><option>אמבולנס</option><option>אוטובוס</option><option>אופנוע</option><option>אחר</option></select>
     </div>
     <div class="meta-field"><label>מד אוץ (קמ')</label><input type="number" id="meta-km" placeholder="0"></div>
-    <div class="meta-field"><label>מועד מבחן רישוי הבא</label><input type="text" id="meta-next-test" placeholder="dd/mm/yyyy" maxlength="10"
-        oninput="formatDateInput(this)" autocomplete="off"></div>
+    <div class="meta-field"><label>מועד מבחן רישוי הבא</label><input type="date" id="meta-next-test"></div>
     <div class="meta-field"><label>מועד טיפול הבא (קמ')</label><input type="number" id="meta-next-service" placeholder="לדוגמה: 150000"></div>
-    <div class="meta-field"><label>תאריך הבדיקה</label><input type="text" id="meta-date" placeholder="dd/mm/yyyy" maxlength="10"
-        oninput="formatDateInput(this)" autocomplete="off"></div>
+    <div class="meta-field"><label>תאריך הבדיקה</label><input type="date" id="meta-date"></div>
     <div class="meta-field"><label>שם מבצע הבקרה</label><input type="text" id="meta-inspector" placeholder="שם מלא"></div>
     <div class="meta-field"><label>יחידה</label><input type="text" id="meta-unit" placeholder="שם היחידה"></div>
     <div class="meta-field"><label>רכב 4×4</label><select id="meta-4x4"><option value="לא">לא</option><option value="כן">כן</option></select></div>
@@ -475,11 +474,6 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
   </div>
   <label style="font-size:0.75rem;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:5px;">הערות</label>
   <textarea id="notes" placeholder="הערות כלליות לגבי הרכב..."></textarea>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
-    <div class="meta-field"><label>שם מבצע הבקרה</label><input type="text" id="sig-name" placeholder="שם מלא"></div>
-    <div class="meta-field"><label>תאריך ביצוע הבקרה</label><input type="text" id="sig-date" placeholder="dd/mm/yyyy" maxlength="10"
-        oninput="formatDateInput(this)" autocomplete="off"></div>
-  </div>
 </div>
 
 <!-- סיכום מילולי -->
@@ -637,13 +631,8 @@ function render() {
     container.appendChild(div);
   });
   updateSummary();
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2,'0');
-  const mm = String(now.getMonth()+1).padStart(2,'0');
-  const yyyy = now.getFullYear();
-  const today = dd + '/' + mm + '/' + yyyy;
+  const today = new Date().toISOString().split('T')[0];
   document.getElementById('meta-date').value = today;
-  document.getElementById('sig-date').value = today;
 }
 
 function renderItem(secId, item, idx) {
@@ -755,9 +744,9 @@ function collectData() {
     reg: document.getElementById('meta-reg').value,
     type: document.getElementById('meta-type').value,
     km: document.getElementById('meta-km').value,
-    nextTest: getISODate('meta-next-test'),
+    nextTest: document.getElementById('meta-next-test').value,
     nextService: document.getElementById('meta-next-service').value,
-    date: getISODate('meta-date'),
+    date: document.getElementById('meta-date').value,
     inspector: document.getElementById('meta-inspector').value,
     unit: document.getElementById('meta-unit').value,
     is4x4: document.getElementById('meta-4x4').value,
@@ -765,8 +754,8 @@ function collectData() {
     outOfService: document.getElementById('out-of-service').value,
     calibrated: document.getElementById('calibrated').value,
     towing: document.getElementById('towing').value,
-    sigName: document.getElementById('sig-name').value,
-    sigDate: getISODate('sig-date'),
+    sigName: meta.inspector,
+    sigDate: meta.date,
     summaryText: document.getElementById('summary-text').value,
     summaryUrgent: document.getElementById('summary-urgent').value,
     summaryRecommendations: document.getElementById('summary-recommendations').value,
@@ -784,9 +773,8 @@ function collectData() {
 }
 
 // PDF EXPORT — Canvas עברית + jsPDF
-async function exportPDF() {
-  showToast('מייצר PDF...');
-  playEngineSound();
+async function exportPDF(silent=false) {
+  if(!silent) { showToast('מייצר PDF...');  playEngineSound(); }
 
   const { meta, items } = collectData();
   const { jsPDF } = window.jspdf;
@@ -1012,13 +1000,12 @@ async function exportPDF() {
     doc.addImage(img,'JPEG',0,0,210,297);
   });
 
-  doc.save('vehicle_inspection_'+(meta.reg||'form')+'_'+(meta.date||'date')+'.pdf');
-  showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
+  if(!silent) doc.save('vehicle_inspection_'+(meta.reg||'form')+'_'+(meta.date||'date')+'.pdf');
+  if(!silent) showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbzF4aUDVO4O9NPNHtNvqMB-AHoVvTo8_f5Z3o7q1bhIHTJca_QAzsZjhcJ4_usOyx788Q/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
   try {
-    // Convert PDF to base64
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
     let binary = '';
@@ -1050,7 +1037,7 @@ async function exportPDF() {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbzGJFP8Q7cCyzvedb_STgBN-fK87ofrMn1j3qtAcJte9XkOlF_mv6A3hbLwd01FHSLTsA/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1064,52 +1051,146 @@ function saveSheetsConfig() {
 async function saveToSheets() {
   const url = localStorage.getItem('sheets-url');
   if (!url) { openSheetsConfig(); showToast('⚠️ יש להגדיר URL תחילה'); return; }
-  showToast('שומר ל-Google Sheets...');
+  showToast('שומר נתונים ומייצר PDF...');
   playEngineSound();
   const { meta, items } = collectData();
   const defects = items.filter(i=>i.status==='לא תקין').map(i=>`[${i.section}] ${i.item}`).join(' | ');
 
-  // Base payload
+  // ── שמירת נתונים ל-Sheets ──
   const payload = {
-    timestamp: new Date().toISOString(),
-    date: meta.date,
-    inspector: meta.inspector,
-    unit: meta.unit,
-    reg: meta.reg,
-    type: meta.type,
-    km: meta.km,
-    is4x4: meta.is4x4,
-    ok_count: items.filter(i=>i.status==='תקין').length,
-    bad_count: items.filter(i=>i.status==='לא תקין').length,
-    not_checked: items.filter(i=>i.status==='לא נבדק').length,
-    defects,
-    conclusion: meta.conclusion,
-    notes: meta.notes,
-    out_of_service: meta.outOfService,
-    calibrated: meta.calibrated,
-    towing: meta.towing,
-    next_test: meta.nextTest,
-    next_service: meta.nextService
+    'חותמת זמן':        new Date().toLocaleString('he-IL'),
+    'תאריך בדיקה':      meta.date,
+    'שם הבודק':         meta.inspector,
+    'יחידה':            meta.unit,
+    'מס רישוי':         meta.reg,
+    'סוג רכב':          meta.type,
+    'מד אוץ קמ':        meta.km,
+    'רכב 4x4':          meta.is4x4,
+    'סה"כ תקין':        items.filter(i=>i.status==='תקין').length,
+    'סה"כ לא תקין':     items.filter(i=>i.status==='לא תקין').length,
+    'סה"כ לא נבדק':     items.filter(i=>i.status==='לא נבדק').length,
+    'ליקויים':          defects,
+    'מסקנה סופית':      meta.conclusion,
+    'הערות':            meta.notes,
+    'חורג מטיפול':      meta.outOfService,
+    'כננת':             meta.calibrated,
+    'וו גרירה':         meta.towing,
+    'מבחן רישוי הבא':   meta.nextTest,
+    'טיפול הבא קמ':     meta.nextService
   };
 
-  // Add each question as separate column
-  items.forEach((item, idx) => {
-    const colName = (idx+1) + '_' + item.item.slice(0,20).replace(/[,\n]/g,' ');
-    payload[colName] = item.status;
-    if (item.defect) payload[colName + '_ליקוי'] = item.defect;
+  // כל שאלה בעברית
+  items.forEach((item) => {
+    payload[item.item] = item.status;
+    if (item.defect) payload[item.item + ' — ליקוי'] = item.defect;
   });
 
-  try {
-    fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
-    showToast('✅ נשמר ב-Google Sheets!');
-  } catch(e) {
-    showToast('❌ שגיאה בשמירה');
-  }
+  fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  });
+  showToast('✅ נתונים נשמרו! מייצר PDF...');
+
+  // ── בניית PDF ושמירה ל-Drive ──
+  setTimeout(async () => {
+    try {
+      const driveUrl = 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec';
+      const { jsPDF } = window.jspdf;
+
+      // Build simple 1-page summary PDF
+      const doc2 = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+
+      // Header
+      doc2.setFillColor(15,45,20); doc2.rect(0,0,210,20,'F');
+      doc2.setTextColor(255,255,255); doc2.setFont('helvetica','bold'); doc2.setFontSize(11);
+      doc2.text('טופס ביקורת חודשית לרכב — מחלקת תחבורה מגב', 105, 13, {align:'center'});
+
+      // Meta
+      doc2.setFontSize(9); doc2.setTextColor(30,41,59); doc2.setFont('helvetica','normal');
+      let y = 28;
+      const metaLines = [
+        'מס רישוי: '+(meta.reg||'—') + '    סוג: '+(meta.type||'—') + '    קמ: '+(meta.km||'—'),
+        'בודק: '+(meta.inspector||'—') + '    יחידה: '+(meta.unit||'—') + '    תאריך: '+(meta.date||'—'),
+        'מסקנה: '+(meta.conclusion||'—') + '    ליקויים: '+items.filter(i=>i.status==='לא תקין').length
+      ];
+      metaLines.forEach(l => { doc2.text(l, 200, y, {align:'right'}); y+=7; });
+
+      // Items table
+      y += 4;
+      doc2.setFillColor(15,45,20); doc2.rect(10,y,190,7,'F');
+      doc2.setTextColor(255,255,255); doc2.setFont('helvetica','bold'); doc2.setFontSize(8);
+      doc2.text('סטטוס', 25, y+5, {align:'center'});
+      doc2.text('תיאור', 190, y+5, {align:'right'});
+      y += 8;
+      doc2.setFont('helvetica','normal'); doc2.setTextColor(30,41,59);
+      items.forEach((item,i) => {
+        if(y>270){ doc2.addPage(); y=15; }
+        const bad = item.status==='לא תקין';
+        const ok  = item.status==='תקין';
+        if(bad) doc2.setFillColor(255,235,235);
+        else if(ok) doc2.setFillColor(235,255,240);
+        else doc2.setFillColor(250,250,250);
+        doc2.rect(10,y,190,6,'F');
+        doc2.setTextColor(bad?180:ok?20:100, bad?20:ok?120:100, 20);
+        doc2.text(item.status, 25, y+4.5, {align:'center'});
+        doc2.setTextColor(30,41,59);
+        doc2.text((item.item||'').slice(0,60), 195, y+4.5, {align:'right'});
+        y+=6;
+      });
+
+      // Watermark
+      doc2.setTextColor(180,210,180); doc2.setFont('helvetica','bold'); doc2.setFontSize(22);
+      doc2.text('(c) Zachuyot Yotzirim', 105, 130, {align:'center', angle:35});
+      doc2.setFontSize(18);
+      doc2.text('Rav-Pakad Alex Bendersky', 105, 148, {align:'center', angle:35});
+
+      // Convert to base64 and upload
+      const ab = doc2.output('arraybuffer');
+      const bytes = new Uint8Array(ab);
+      let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+      const b64 = btoa(bin);
+      const fname = '\u05D1\u05D3\u05D9\u05E7\u05D4_'+(meta.reg||'\u05E8\u05DB\u05D1')+'_'+(meta.date||'')+'.pdf';
+
+      // שליחה ל-Drive דרך form POST (עוקפת CORS)
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = driveUrl;
+      form.target = 'drive-iframe';
+      form.style.display = 'none';
+
+      const addField = (name, val) => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = name; inp.value = val;
+        form.appendChild(inp);
+      };
+      addField('pdf_base64', b64);
+      addField('file_name', fname);
+      addField('reg', meta.reg||'');
+      addField('date', meta.date||'');
+      addField('inspector', meta.inspector||'');
+
+      // iframe target
+      let iframe = document.getElementById('drive-iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.name = 'drive-iframe';
+        iframe.id = 'drive-iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+
+      showToast('\u{1F4C1} PDF \u05E0\u05E9\u05DE\u05E8 \u05D1-Google Drive!');
+    } catch(err) {
+      console.error('PDF Drive:', err);
+      showToast('⚠️ שגיאה בשמירת PDF');
+    }
+  }, 300);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1241,7 +1322,7 @@ function setDateField(fieldId, isoDate) {
 // ═══ QR CODE ═══
 // Auto-set Sheets URL if not already set
 if (!localStorage.getItem('sheets-url')) {
-  localStorage.setItem('sheets-url', 'https://script.google.com/macros/s/AKfycbzGJFP8Q7cCyzvedb_STgBN-fK87ofrMn1j3qtAcJte9XkOlF_mv6A3hbLwd01FHSLTsA/exec');
+  localStorage.setItem('sheets-url', 'https://script.google.com/macros/s/AKfycbyDUSBWqb0CkFrODif3U2S4dN_gRORHjdO7ZaHXpqV9F4UYCZaxlocd_89_oZrUo-Rj/exec');
 }
 function showQR() {
   const container = document.getElementById('qr-container');
