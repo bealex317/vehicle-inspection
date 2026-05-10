@@ -1016,26 +1016,27 @@ async function exportPDF() {
   showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbxa4CtRsGH4fPW-Q7NG6P5SN2zmomI6hMwHtLk9GcjEun3g60wBCQ_arWuGWF1M7hInZg/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbzF4aUDVO4O9NPNHtNvqMB-AHoVvTo8_f5Z3o7q1bhIHTJca_QAzsZjhcJ4_usOyx788Q/exec';
   try {
     const pdfBase64 = doc.output('datauristring').split(',')[1];
-    const fileName = 'בדיקה_'+(meta.reg||'רכב')+'_'+(meta.date||new Date().toLocaleDateString('he-IL'))+'.pdf';
-    showToast('\u{1F4BE} \u05E9\u05D5\u05DE\u05E8 \u05DC-Drive...');
-    fetch(driveUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        pdf_base64: pdfBase64,
-        reg: meta.reg||'',
-        date: meta.date||'',
-        inspector: meta.inspector||'',
-        file_name: fileName
-      })
-    });
-    setTimeout(()=>showToast('\u2705 PDF \u05E0\u05E9\u05DE\u05E8 \u05D1-Google Drive!'), 2000);
+    const fileName = '\u05D1\u05D3\u05D9\u05E7\u05D4_'+(meta.reg||'\u05E8\u05DB\u05D1')+'_'+(meta.date||'')+'.pdf';
+    setTimeout(()=> {
+      fetch(driveUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          pdf_base64: pdfBase64,
+          reg: meta.reg||'',
+          date: meta.date||'',
+          inspector: meta.inspector||'',
+          file_name: fileName
+        })
+      });
+      showToast('\u{1F4C1} PDF \u05E0\u05E9\u05DE\u05E8 \u05D1-Google Drive!');
+    }, 500);
   } catch(e) {
-    console.log('Drive save error:', e);
+    console.log('Drive error:', e);
   }
 }
 
