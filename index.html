@@ -1094,10 +1094,11 @@ async function saveToSheets() {
     const jsonStr = JSON.stringify(payload);
     // שלח נתוני בסיס בלבד - ASCII safe
     const safePayload = {
-      reg:          meta.reg || '',
+      timestamp:    new Date().toISOString(),
       date:         meta.date || '',
       inspector:    meta.inspector || '',
       unit:         meta.unit || '',
+      reg:          meta.reg || '',
       type:         meta.type || '',
       km:           meta.km || '',
       is4x4:        meta.is4x4 || '',
@@ -1106,9 +1107,7 @@ async function saveToSheets() {
       not_checked:  items.filter(i=>i.status==='לא נבדק').length,
       defects:      items.filter(i=>i.status==='לא תקין').map(i=>i.item).join(' | '),
       conclusion:   meta.conclusion || '',
-      notes:        meta.notes || '',
-      next_test:    meta.nextTest || '',
-      next_service: meta.nextService || ''
+      notes:        meta.notes || ''
     };
 
     const jsonStr2 = JSON.stringify(safePayload);
