@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דשבורד ביקורות רכב — מגב ירושלים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Heebo',sans-serif; direction:rtl; background:#0a0a0a; color:#fff; min-height:100vh; }
+header { background:rgba(0,0,0,0.9); border-bottom:2px solid #4db6ac; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; backdrop-filter:blur(12px); }
+header h1 { font-size:1.1rem; font-weight:700; }
+header p { font-size:0.72rem; color:#4db6ac; margin-top:2px; }
+.refresh-btn { background:rgba(77,182,172,0.15); color:#4db6ac; border:1px solid rgba(77,182,172,0.4); border-radius:99px; padding:7px 16px; cursor:pointer; font-family:'Heebo',sans-serif; font-size:0.82rem; font-weight:600; display:flex; align-items:center; gap:6px; }
+.refresh-btn:hover { background:rgba(77,182,172,0.25); }
+main { max-width:1100px; margin:0 auto; padding:20px 16px 40px; }
+
+/* Metrics */
+.metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+.metric { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px; text-align:center; }
+.metric-num { font-size:2rem; font-weight:900; line-height:1; }
+.metric-lbl { font-size:0.72rem; color:rgba(255,255,255,0.5); margin-top:4px; text-transform:uppercase; letter-spacing:1px; }
+.ok-num { color:#4db6ac; }
+.bad-num { color:#ef5350; }
+.total-num { color:#fff; }
+.rate-num { color:#ffca28; }
+
+/* Charts */
+.charts { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+.chart-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:16px; padding:16px; }
+.chart-title { font-size:0.8rem; font-weight:600; color:rgba(255,255,255,0.6); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
+
+/* Table */
+.table-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:16px; padding:16px; margin-bottom:16px; }
+.table-title { font-size:0.8rem; font-weight:600; color:rgba(255,255,255,0.6); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
+table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+th { text-align:right; padding:8px 10px; color:rgba(255,255,255,0.4); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:10px 10px; border-bottom:1px solid rgba(255,255,255,0.05); color:#e0e0e0; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(255,255,255,0.03); }
+.badge { display:inline-block; padding:3px 10px; border-radius:99px; font-size:0.72rem; font-weight:700; }
+.badge-ok { background:rgba(77,182,172,0.2); color:#4db6ac; }
+.badge-bad { background:rgba(239,83,80,0.2); color:#ef5350; }
+.badge-partial { background:rgba(255,202,40,0.2); color:#ffca28; }
+
+/* Loading */
+.loading { text-align:center; padding:60px; color:rgba(255,255,255,0.4); }
+.loading-spin { display:inline-block; width:32px; height:32px; border:3px solid rgba(77,182,172,0.2); border-top-color:#4db6ac; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:12px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Defects */
+.defects-card { background:rgba(239,83,80,0.08); border:1px solid rgba(239,83,80,0.2); border-radius:16px; padding:16px; margin-bottom:16px; }
+.defects-title { font-size:0.8rem; font-weight:600; color:#ef5350; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
+.defect-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(239,83,80,0.1); font-size:0.85rem; }
+.defect-item:last-child { border-bottom:none; }
+.defect-count { color:#ef5350; font-weight:700; }
+
+@media(max-width:640px) {
+  .metrics { grid-template-columns:1fr 1fr; }
+  .charts { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 דשבורד ביקורות רכב</h1>
+    <p>מחלקת תחבורה — מגב ירושלים | מתעדכן מ-Google Sheets</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <span id="last-update" style="font-size:0.72rem;color:rgba(255,255,255,0.4);"></span>
+    <button class="refresh-btn" onclick="loadData()">🔄 רענן</button>
+    <button class="refresh-btn" onclick="location.href='index.html'" style="color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2);">← חזור לטופס</button>
+  </div>
+</header>
+
+<main>
+  <div id="loading" class="loading">
+    <div class="loading-spin"></div>
+    <div>טוען נתונים...</div>
+  </div>
+  <div id="content" style="display:none;">
+    <div class="metrics">
+      <div class="metric"><div class="metric-num total-num" id="m-total">0</div><div class="metric-lbl">סה"כ בדיקות</div></div>
+      <div class="metric"><div class="metric-num ok-num" id="m-ok">0</div><div class="metric-lbl">תקין לשירות</div></div>
+      <div class="metric"><div class="metric-num bad-num" id="m-bad">0</div><div class="metric-lbl">לא תקין</div></div>
+      <div class="metric"><div class="metric-num rate-num" id="m-rate">0%</div><div class="metric-lbl">שיעור תקינות</div></div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <div class="chart-title">בדיקות לפי שבוע</div>
+        <div style="position:relative;height:180px;">
+          <canvas id="weekChart" role="img" aria-label="גרף בדיקות שבועי"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">תוצאות בדיקות</div>
+        <div style="position:relative;height:180px;">
+          <canvas id="resultChart" role="img" aria-label="גרף תוצאות"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div id="defects-section" class="defects-card" style="display:none;">
+      <div class="defects-title">⚠️ ליקויים נפוצים</div>
+      <div id="defects-list"></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-title">בדיקות אחרונות</div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>מס רישוי</th>
+              <th>בודק</th>
+              <th>יחידה</th>
+              <th>תקין</th>
+              <th>לא תקין</th>
+              <th>מסקנה</th>
+            </tr>
+          </thead>
+          <tbody id="rows-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="error-msg" style="display:none;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">
+    ❌ לא ניתן לטעון נתונים — בדוק את חיבור Google Sheets
+  </div>
+</main>
+
+<script>
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzepPEcojy2fs8ApnBs7EX7oFvZsIH0hxllG5iOJLT9_pyPSyqAFgvT1hxuGATqEasO/exec';
+
+let weekChart, resultChart;
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('error-msg').style.display = 'none';
+
+  try {
+    const url = SHEETS_URL + '?action=dashboard';
+    const res = await fetch(url);
+    const json = await res.json();
+    const rows = json.rows || [];
+
+    if (rows.length === 0) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-msg').style.display = 'block';
+      document.getElementById('error-msg').textContent = 'אין נתונים בגיליון עדיין';
+      return;
+    }
+
+    renderDashboard(rows);
+    document.getElementById('last-update').textContent = 'עודכן: ' + new Date().toLocaleTimeString('he-IL');
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-msg').style.display = 'block';
+  }
+}
+
+function renderDashboard(rows) {
+  const total = rows.length;
+  const okRows = rows.filter(r => (r.conclusion||'').includes('תקין לשירות'));
+  const badRows = rows.filter(r => (r.conclusion||'').includes('מוצא מכלל'));
+  const rate = total ? Math.round(okRows.length / total * 100) : 0;
+
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-ok').textContent = okRows.length;
+  document.getElementById('m-bad').textContent = badRows.length;
+  document.getElementById('m-rate').textContent = rate + '%';
+
+  // Weekly chart
+  const weekMap = {};
+  rows.forEach(r => {
+    const d = r.date || r['תאריך בדיקה'] || '';
+    const week = d ? 'שבוע ' + Math.ceil(new Date(d).getDate() / 7) : 'לא ידוע';
+    weekMap[week] = (weekMap[week] || 0) + 1;
+  });
+  const wLabels = Object.keys(weekMap);
+  const wData = Object.values(weekMap);
+
+  if (weekChart) weekChart.destroy();
+  weekChart = new Chart(document.getElementById('weekChart'), {
+    type: 'bar',
+    data: {
+      labels: wLabels,
+      datasets: [{ label: 'בדיקות', data: wData, backgroundColor: '#4db6ac', borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { color: 'rgba(255,255,255,0.5)', stepSize: 1, font:{size:11} }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        x: { ticks: { color: 'rgba(255,255,255,0.5)', font:{size:11} }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Result chart
+  const partial = rows.filter(r => (r.conclusion||'').includes('בכפוף')).length;
+  if (resultChart) resultChart.destroy();
+  resultChart = new Chart(document.getElementById('resultChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['תקין לשירות', 'מוצא מכלל שירות', 'בכפוף לתיקונים'],
+      datasets: [{ data: [okRows.length, badRows.length, partial], backgroundColor: ['#4db6ac','#ef5350','#ffca28'], borderWidth: 2, borderColor: 'rgba(0,0,0,0.3)' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.6)', font:{size:11}, padding: 10 } } },
+      cutout: '60%'
+    }
+  });
+
+  // Defects
+  const defectsMap = {};
+  rows.forEach(r => {
+    const d = r.defects || r['ליקויים'] || '';
+    if (d) d.split('|').forEach(item => {
+      const t = item.trim();
+      if (t) defectsMap[t] = (defectsMap[t] || 0) + 1;
+    });
+  });
+  const topDefects = Object.entries(defectsMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  if (topDefects.length > 0) {
+    document.getElementById('defects-section').style.display = 'block';
+    document.getElementById('defects-list').innerHTML = topDefects.map(([name, count]) =>
+      `<div class="defect-item"><span>${name}</span><span class="defect-count">${count} פעמים</span></div>`
+    ).join('');
+  }
+
+  // Table
+  const recent = [...rows].reverse().slice(0, 15);
+  document.getElementById('rows-table').innerHTML = recent.map(r => {
+    const conc = r.conclusion || r['מסקנה'] || '';
+    const badgeClass = conc.includes('תקין לשירות') ? 'badge-ok' : conc.includes('מוצא') ? 'badge-bad' : 'badge-partial';
+    return `<tr>
+      <td>${r.date || r['תאריך בדיקה'] || '—'}</td>
+      <td>${r.reg || r['מס רישוי'] || '—'}</td>
+      <td>${r.inspector || r['שם הבודק'] || '—'}</td>
+      <td>${r.unit || r['יחידה'] || '—'}</td>
+      <td style="color:#4db6ac;font-weight:700;">${r.ok_count ?? '—'}</td>
+      <td style="color:#ef5350;font-weight:700;">${r.bad_count ?? '—'}</td>
+      <td><span class="badge ${badgeClass}">${conc || '—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
