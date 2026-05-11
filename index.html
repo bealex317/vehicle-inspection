@@ -536,7 +536,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 
 <script>
 // ═══ SHEETS URL ═══
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxFb7KURPUPjbJSNRySBruRpFE7oMgrBZYxazZduR7a4YwvRsMhEnaL_dXeQoraORzp/exec';
 localStorage.setItem('sheets-url', SHEETS_URL);
 
 // ═══════════════════════════════════════════════════
@@ -1014,7 +1014,7 @@ async function exportPDF(silent=false) {
   }
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbxFb7KURPUPjbJSNRySBruRpFE7oMgrBZYxazZduR7a4YwvRsMhEnaL_dXeQoraORzp/exec';
   try {
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
@@ -1047,7 +1047,7 @@ async function exportPDF(silent=false) {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxFb7KURPUPjbJSNRySBruRpFE7oMgrBZYxazZduR7a4YwvRsMhEnaL_dXeQoraORzp/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1059,7 +1059,7 @@ function saveSheetsConfig() {
 }
 
 async function saveToSheets() {
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxFb7KURPUPjbJSNRySBruRpFE7oMgrBZYxazZduR7a4YwvRsMhEnaL_dXeQoraORzp/exec';
   showToast('שומר נתונים...');
   playEngineSound();
 
@@ -1093,11 +1093,10 @@ async function saveToSheets() {
     const jsonStr = JSON.stringify(payload);
     // שלח נתוני בסיס בלבד - ASCII safe
     const safePayload = {
-      timestamp:    new Date().toISOString(),
+      reg:          meta.reg || '',
       date:         meta.date || '',
       inspector:    meta.inspector || '',
       unit:         meta.unit || '',
-      reg:          meta.reg || '',
       type:         meta.type || '',
       km:           meta.km || '',
       is4x4:        meta.is4x4 || '',
@@ -1106,7 +1105,9 @@ async function saveToSheets() {
       not_checked:  items.filter(i=>i.status==='לא נבדק').length,
       defects:      items.filter(i=>i.status==='לא תקין').map(i=>i.item).join(' | '),
       conclusion:   meta.conclusion || '',
-      notes:        meta.notes || ''
+      notes:        meta.notes || '',
+      next_test:    meta.nextTest || '',
+      next_service: meta.nextService || ''
     };
 
     const jsonStr2 = JSON.stringify(safePayload);
