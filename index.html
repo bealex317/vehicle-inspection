@@ -536,7 +536,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 
 <script>
 // ═══ SHEETS URL ═══
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
 localStorage.setItem('sheets-url', SHEETS_URL);
 
 // ═══════════════════════════════════════════════════
@@ -1014,7 +1014,7 @@ async function exportPDF(silent=false) {
   }
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
   try {
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
@@ -1047,7 +1047,7 @@ async function exportPDF(silent=false) {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1059,7 +1059,7 @@ function saveSheetsConfig() {
 }
 
 async function saveToSheets() {
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxNhqeXYkCMAHCh841UP5B7mVYvJpiln2aTj6wcc85__RBOmEolKH7765iVX9DHNhmL/exec';
   showToast('שומר נתונים...');
   playEngineSound();
 
