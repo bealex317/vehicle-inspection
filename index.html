@@ -536,7 +536,7 @@ main { max-width:960px; margin:20px auto; padding:0 16px 60px; }
 
 <script>
 // ═══ SHEETS URL ═══
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx9LNxMyppOYtrnM6PjmRvObJpS7rfQvHAUJuo1AzFsvoGg79hfSqD08eEMtbEvhW4Gpg/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
 localStorage.setItem('sheets-url', SHEETS_URL);
 
 // ═══════════════════════════════════════════════════
@@ -1005,11 +1005,16 @@ async function exportPDF(silent=false) {
     doc.addImage(img,'JPEG',0,0,210,297);
   });
 
-  if(!silent) doc.save('vehicle_inspection_'+(meta.reg||'form')+'_'+(meta.date||'date')+'.pdf');
-  if(!silent) showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!');
+  if(!silent) {
+    // פתח PDF בחלון חדש לצפייה והורדה
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    showToast('\u2705 PDF \u05E0\u05D5\u05E6\u05E8 — \u05E0\u05E4\u05EA\u05D7 \u05D1\u05D7\u05DC\u05D5\u05DF \u05D7\u05D3\u05E9!');
+  }
 
   // שמירה ל-Google Drive
-  const driveUrl = 'https://script.google.com/macros/s/AKfycbx9LNxMyppOYtrnM6PjmRvObJpS7rfQvHAUJuo1AzFsvoGg79hfSqD08eEMtbEvhW4Gpg/exec';
+  const driveUrl = 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
   try {
     const pdfArrayBuffer = doc.output('arraybuffer');
     const pdfBytes = new Uint8Array(pdfArrayBuffer);
@@ -1042,7 +1047,7 @@ async function exportPDF(silent=false) {
 // GOOGLE SHEETS
 // ═══════════════════════════════════════════════════
 function openSheetsConfig() {
-  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycbx9LNxMyppOYtrnM6PjmRvObJpS7rfQvHAUJuo1AzFsvoGg79hfSqD08eEMtbEvhW4Gpg/exec';
+  document.getElementById('sheets-url').value = localStorage.getItem('sheets-url') || 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
   document.getElementById('sheets-name').value = localStorage.getItem('sheets-name') || 'בדיקות';
   document.getElementById('sheets-modal').classList.add('open');
 }
@@ -1054,7 +1059,7 @@ function saveSheetsConfig() {
 }
 
 async function saveToSheets() {
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx9LNxMyppOYtrnM6PjmRvObJpS7rfQvHAUJuo1AzFsvoGg79hfSqD08eEMtbEvhW4Gpg/exec';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby04VvbTekb4vm4tbUr4RL1RxaPlzy8WT0M3xRWbOHRoJ25W1iz5U2HQV-HEgAg8vD6/exec';
   showToast('שומר נתונים...');
   playEngineSound();
 
@@ -1086,32 +1091,29 @@ async function saveToSheets() {
   // שלח דרך GET עם params (עובד תמיד עם Apps Script)
   try {
     const jsonStr = JSON.stringify(payload);
-    const encoded = encodeURIComponent(jsonStr);
-    console.log('Payload size:', encoded.length, 'chars');
+    // שלח נתוני בסיס בלבד - ASCII safe
+    const safePayload = {
+      timestamp:    new Date().toISOString(),
+      date:         meta.date || '',
+      inspector:    meta.inspector || '',
+      unit:         meta.unit || '',
+      reg:          meta.reg || '',
+      type:         meta.type || '',
+      km:           meta.km || '',
+      is4x4:        meta.is4x4 || '',
+      ok_count:     items.filter(i=>i.status==='תקין').length,
+      bad_count:    items.filter(i=>i.status==='לא תקין').length,
+      not_checked:  items.filter(i=>i.status==='לא נבדק').length,
+      defects:      items.filter(i=>i.status==='לא תקין').map(i=>i.item).join(' | '),
+      conclusion:   meta.conclusion || '',
+      notes:        meta.notes || ''
+    };
 
-    // אם גדול מ-2000 — שלח רק נתוני בסיס
-    let sendPayload = payload;
-    if (encoded.length > 2000) {
-      sendPayload = {
-        'חותמת זמן':    payload['חותמת זמן'],
-        'תאריך בדיקה':  payload['תאריך בדיקה'],
-        'שם הבודק':     payload['שם הבודק'],
-        'יחידה':        payload['יחידה'],
-        'מס רישוי':     payload['מס רישוי'],
-        'סוג רכב':      payload['סוג רכב'],
-        'מד אוץ קמ':    payload['מד אוץ קמ'],
-        'סהכ תקין':     payload['סהכ תקין'],
-        'סהכ לא תקין':  payload['סהכ לא תקין'],
-        'ליקויים':      payload['ליקויים'],
-        'מסקנה':        payload['מסקנה'],
-        'הערות':        payload['הערות'],
-      };
-    }
+    const jsonStr2 = JSON.stringify(safePayload);
+    const encoded2 = encodeURIComponent(jsonStr2);
+    const getUrl = SHEETS_URL + '?data=' + encoded2;
+    console.log('Sending size:', encoded2.length);
 
-    const finalEncoded = encodeURIComponent(JSON.stringify(sendPayload));
-    const getUrl = SHEETS_URL + '?data=' + finalEncoded;
-    console.log('Final size:', finalEncoded.length, 'chars');
-    
     await fetch(getUrl, { method: 'GET', mode: 'no-cors' });
     showToast('✅ נשמר ב-Google Sheets!');
   } catch(e) {
