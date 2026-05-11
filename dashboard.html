@@ -117,6 +117,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
             <tr>
               <th>תאריך</th>
               <th>מס רישוי</th>
+              <th>מד אוץ</th>
               <th>בודק</th>
               <th>יחידה</th>
               <th>תקין</th>
@@ -248,6 +249,7 @@ function renderDashboard(rows) {
     return `<tr>
       <td>${r.date || r['תאריך בדיקה'] || '—'}</td>
       <td>${r.reg || r['מס רישוי'] || '—'}</td>
+      <td style="color:#ffca28;font-weight:600;">${r.km ? Number(r.km).toLocaleString() + ' קמ\'' : '—'}</td>
       <td>${r.inspector || r['שם הבודק'] || '—'}</td>
       <td>${r.unit || r['יחידה'] || '—'}</td>
       <td style="color:#4db6ac;font-weight:700;">${r.ok_count ?? '—'}</td>
